@@ -1,0 +1,7 @@
+﻿demos/
+*.dem
+*.parquet
+*.pt
+__pycache__/
+venv/
+*.exe
