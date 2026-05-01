@@ -1,4 +1,13 @@
 # download_and_compress.py
+"""
+Скачивает демки топовых команд с HLTV и сжимает в ZIP архив
+
+Требования:
+    pip install requests beautifulsoup4 tqdm
+
+Использование:
+    python download_and_compress.py
+"""
 import requests
 from bs4 import BeautifulSoup
 import os
