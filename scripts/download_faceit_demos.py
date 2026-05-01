@@ -3,6 +3,7 @@ import requests
 import os
 import time
 import socket
+import zstandard as zstd
 from tqdm import tqdm
 
 class FaceitDemoDownloader:
@@ -67,6 +68,31 @@ class FaceitDemoDownloader:
             return response.json()
         except Exception as e:
             print(f"❌ Ошибка получения деталей матча: {e}")
+            return None
+    
+    def decompress_zst(self, zst_path):
+        """Распаковать .zst файл в .dem"""
+        dem_path = zst_path.replace('.dem.zst', '.dem')
+        
+        try:
+            print(f"  📦 Распаковываем...")
+            
+            dctx = zstd.ZstdDecompressor()
+            
+            with open(zst_path, 'rb') as ifh, open(dem_path, 'wb') as ofh:
+                dctx.copy_stream(ifh, ofh)
+            
+            # Удаляем сжатый файл после распаковки
+            os.remove(zst_path)
+            
+            file_size_mb = os.path.getsize(dem_path) / 1e6
+            print(f"  ✅ Распаковано: {file_size_mb:.1f} MB")
+            
+            return dem_path
+        except Exception as e:
+            print(f"  ❌ Ошибка распаковки: {e}")
+            if os.path.exists(dem_path):
+                os.remove(dem_path)
             return None
     
     def download_demo(self, demo_url, save_path):
@@ -190,9 +216,17 @@ class FaceitDemoDownloader:
             # Скачиваем
             print(f"  📥 Качаем: {filename}")
             if self.download_demo(demo_url, filepath):
-                file_size_mb = os.path.getsize(filepath) / 1e6
-                print(f"  ✅ Готово: {file_size_mb:.1f} MB")
-                downloaded += 1
+                # Проверяем если это .zst файл - распаковываем
+                if filepath.endswith('.zst'):
+                    dem_path = self.decompress_zst(filepath)
+                    if dem_path:
+                        downloaded += 1
+                    else:
+                        print(f"  ❌ Не удалось распаковать")
+                else:
+                    file_size_mb = os.path.getsize(filepath) / 1e6
+                    print(f"  ✅ Готово: {file_size_mb:.1f} MB")
+                    downloaded += 1
             else:
                 print(f"  ❌ Не удалось скачать")
             
