@@ -2,6 +2,7 @@
 import requests
 import os
 import time
+import socket
 from tqdm import tqdm
 
 class FaceitDemoDownloader:
@@ -15,6 +16,14 @@ class FaceitDemoDownloader:
             "Authorization": f"Bearer {api_key}",
             "Accept": "application/json"
         }
+    
+    def check_dns(self, hostname):
+        """Проверка доступности DNS"""
+        try:
+            socket.gethostbyname(hostname)
+            return True
+        except socket.gaierror:
+            return False
     
     def get_player_id(self, nickname):
         """Получить player_id по нику"""
@@ -63,7 +72,15 @@ class FaceitDemoDownloader:
     def download_demo(self, demo_url, save_path):
         """Скачать демку по URL"""
         try:
-            response = requests.get(demo_url, stream=True, timeout=120)
+            # Добавляем больше попыток и таймаут
+            response = requests.get(
+                demo_url, 
+                stream=True, 
+                timeout=180,  # Увеличили таймаут
+                headers={
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                }
+            )
             response.raise_for_status()
             
             total_size = int(response.headers.get('content-length', 0))
@@ -75,8 +92,13 @@ class FaceitDemoDownloader:
                         pbar.update(len(chunk))
             
             return True
-        except Exception as e:
+        except requests.exceptions.RequestException as e:
             print(f"❌ Ошибка скачивания: {e}")
+            if os.path.exists(save_path):
+                os.remove(save_path)
+            return False
+        except Exception as e:
+            print(f"❌ Неожиданная ошибка: {e}")
             if os.path.exists(save_path):
                 os.remove(save_path)
             return False
@@ -100,6 +122,23 @@ class FaceitDemoDownloader:
             return
         
         print(f"✅ Найден! Player ID: {player_id}")
+        
+        # Проверяем DNS перед началом
+        print(f"🔍 Проверяем доступность FACEIT CDN...")
+        if not self.check_dns("demos-europe-central.backblaze.faceit-cdn.net"):
+            print("❌ ОШИБКА: Не удаётся подключиться к FACEIT CDN!")
+            print("⚠️  Возможные причины:")
+            print("   1. Google Colab блокирует Backblaze CDN")
+            print("   2. Временные проблемы с DNS")
+            print("   3. Сетевые ограничения")
+            print("\n💡 РЕШЕНИЕ:")
+            print("   Скачай демки на своём компьютере:")
+            print("   1. Запусти: python download_donk.py")
+            print("   2. Загрузи демки на Google Drive")
+            print("   3. Используй их в Colab")
+            return
+        
+        print(f"✅ CDN доступен!")
         print(f"📥 Получаем список матчей...")
         
         matches = self.get_player_matches(player_id, limit=n_demos * 2)
