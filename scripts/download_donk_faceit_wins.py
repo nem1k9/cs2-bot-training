@@ -1,19 +1,20 @@
 # download_donk_faceit_wins.py
 """
-Скачивает выигранные матчи donk с FACEIT API
+Скачивает выигранные матчи donk с FACEIT API (в формате .zst)
 
 Требования:
-    pip install requests tqdm zstandard
+    pip install requests tqdm
 
 Использование:
     1. Получи API ключ на https://developers.faceit.com/
     2. Вставь ключ в API_KEY
     3. Запусти: python download_donk_faceit_wins.py
+    4. Загрузи папку demos на Google Drive
+    5. Используй Colab для распаковки и обучения
 """
 import requests
 import os
 import time
-import zstandard as zstd
 from tqdm import tqdm
 
 class DonkFaceitWinsDownloader:
@@ -67,31 +68,6 @@ class DonkFaceitWinsDownloader:
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            return None
-    
-    def decompress_zst(self, zst_path):
-        """Распаковать .zst файл"""
-        dem_path = zst_path.replace('.dem.zst', '.dem')
-        
-        try:
-            print(f"  📦 Распаковываем...")
-            
-            dctx = zstd.ZstdDecompressor()
-            
-            with open(zst_path, 'rb') as ifh, open(dem_path, 'wb') as ofh:
-                dctx.copy_stream(ifh, ofh)
-            
-            # Удаляем сжатый файл
-            os.remove(zst_path)
-            
-            file_size_mb = os.path.getsize(dem_path) / 1e6
-            print(f"  ✅ Распаковано: {file_size_mb:.1f} MB")
-            
-            return dem_path
-        except Exception as e:
-            print(f"  ❌ Ошибка распаковки: {e}")
-            if os.path.exists(dem_path):
-                os.remove(dem_path)
             return None
     
     def download_demo(self, demo_url, save_path):
@@ -200,20 +176,17 @@ class DonkFaceitWinsDownloader:
             filepath = os.path.join(save_dir, filename)
             
             # Проверяем что уже не скачано
-            dem_path = filepath.replace('.zst', '')
-            if os.path.exists(dem_path):
-                print(f"  ✅ Уже есть: {os.path.basename(dem_path)}")
+            if os.path.exists(filepath):
+                print(f"  ✅ Уже есть: {filename}")
                 downloaded += 1
                 continue
             
             # Скачиваем
             print(f"  📥 Качаем...")
             if self.download_demo(demo_url, filepath):
-                # Распаковываем
-                if self.decompress_zst(filepath):
-                    downloaded += 1
-                else:
-                    print(f"  ❌ Не удалось распаковать")
+                file_size_mb = os.path.getsize(filepath) / 1e6
+                print(f"  ✅ Готово: {file_size_mb:.1f} MB (сжато)")
+                downloaded += 1
             else:
                 print(f"  ❌ Не удалось скачать")
             
@@ -227,9 +200,10 @@ class DonkFaceitWinsDownloader:
         
         if downloaded > 0:
             print(f"\n🎯 Следующие шаги:")
-            print(f"   1. Парсинг: python parse_demos.py")
-            print(f"   2. Обучение: python train.py")
-            print(f"\n💡 Парсер будет анализировать только donk!")
+            print(f"   1. Загрузи папку demos на Google Drive")
+            print(f"   2. Используй Colab ноутбук для распаковки и обучения")
+            print(f"\n💡 Файлы в формате .zst (сжатые)")
+            print(f"💡 Colab автоматически распакует их!")
             return True
         
         return False
