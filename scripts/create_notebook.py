@@ -1,33 +1,22 @@
-{
+﻿import json
+
+nb = {
  "nbformat": 4,
  "nbformat_minor": 0,
  "metadata": {
-  "kernelspec": {
-   "display_name": "Python 3",
-   "name": "python3"
-  },
-  "language_info": {
-   "name": "python"
-  },
+  "kernelspec": {"display_name": "Python 3", "name": "python3"},
+  "language_info": {"name": "python"},
   "accelerator": "GPU",
-  "colab": {
-   "provenance": []
-  }
+  "colab": {"provenance": []}
  },
  "cells": [
   {
    "cell_type": "markdown",
    "metadata": {},
-   "source": [
-    "# CS2 Bot Training\n",
-    "Запускай ячейки по порядку!"
-   ]
+   "source": ["# CS2 Bot Training\n", "Запускай ячейки по порядку!"]
   },
   {
-   "cell_type": "code",
-   "metadata": {},
-   "execution_count": null,
-   "outputs": [],
+   "cell_type": "code", "metadata": {}, "execution_count": None, "outputs": [],
    "source": [
     "!git clone https://github.com/nem1k9/cs2-bot-training.git\n",
     "import os, sys\n",
@@ -38,10 +27,7 @@
    ]
   },
   {
-   "cell_type": "code",
-   "metadata": {},
-   "execution_count": null,
-   "outputs": [],
+   "cell_type": "code", "metadata": {}, "execution_count": None, "outputs": [],
    "source": [
     "from google.colab import drive\n",
     "drive.mount('/content/drive')\n",
@@ -51,10 +37,7 @@
    ]
   },
   {
-   "cell_type": "code",
-   "metadata": {},
-   "execution_count": null,
-   "outputs": [],
+   "cell_type": "code", "metadata": {}, "execution_count": None, "outputs": [],
    "source": [
     "import sys\n",
     "sys.path.append('/content/cs2-bot-training/scripts')\n",
@@ -65,10 +48,7 @@
    ]
   },
   {
-   "cell_type": "code",
-   "metadata": {},
-   "execution_count": null,
-   "outputs": [],
+   "cell_type": "code", "metadata": {}, "execution_count": None, "outputs": [],
    "source": [
     "import os\n",
     "dataset_path = '/content/drive/MyDrive/cs2bot/dataset.parquet'\n",
@@ -80,10 +60,7 @@
    ]
   },
   {
-   "cell_type": "code",
-   "metadata": {},
-   "execution_count": null,
-   "outputs": [],
+   "cell_type": "code", "metadata": {}, "execution_count": None, "outputs": [],
    "source": [
     "import torch, os\n",
     "print(f'GPU: {torch.cuda.get_device_name(0)}')\n",
@@ -97,10 +74,7 @@
    ]
   },
   {
-   "cell_type": "code",
-   "metadata": {},
-   "execution_count": null,
-   "outputs": [],
+   "cell_type": "code", "metadata": {}, "execution_count": None, "outputs": [],
    "source": [
     "from google.colab import files\n",
     "files.download('/content/drive/MyDrive/cs2bot/cs2bot_final.pt')\n",
@@ -109,3 +83,7 @@
   }
  ]
 }
+
+with open("CS2_Bot_Training.ipynb", "w", encoding="utf-8") as f:
+    json.dump(nb, f, ensure_ascii=False, indent=1)
+print("Файл создан!")
